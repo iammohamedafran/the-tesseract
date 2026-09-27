@@ -1,0 +1,15 @@
+Feature,Importance
+elderly_density,0.29437905122208974
+max_humidity_5day,0.21239717885586964
+worker_density,0.1274987652231631
+infant_density,0.09880697291489066
+max_WBGT_5day,0.053853557813498105
+longitude,0.05179650745239211
+mean_humidity_5day,0.04645701610448425
+mean_WBGT_5day,0.0358512351455746
+mean_temp_5day,0.03337930267326212
+latitude,0.030279779583833558
+max_temp_5day,0.015300633010942118
+dangerous_WBGT_days,0.0
+red_WBGT_days,0.0
+extreme_WBGT_days,0.0

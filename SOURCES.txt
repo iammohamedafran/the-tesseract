@@ -1,0 +1,27 @@
+Examples:
+https://github.com/Varun-men/Heat-Stress-Risk-Detection/tree/main/ignivis-backend
+https://bhuvan-app1.nrsc.gov.in/heatwave/
+https://swechha.in/now/heat
+
+Sources:
+
+https://www.visualcrossing.com/weather-api/
+https://censusindia.gov.in/census.website/en/data/tables?utm_source=chatgpt.com
+https://www.data.gov.in/keywords/Worker
+https://esankhyiki.mospi.gov.in/macroindicators?product=plfs
+https://docs.google.com/spreadsheets/d/14qWR6XQi6Cy4bqRneZoR7zusa-dJv1OI/edit?gid=834176933#gid=834176933
+https://heathealth.info/news/lost-in-the-heat-the-critical-miscalculation-in-indias-heatwave-mortality-data/
+https://heathealth.info/wp-content/uploads/downtoearth_2025-04-09_672dcq4s_Map.avif
+https://www.windy.com/-Temperature-temp?temp,13.090,80.274,5
+https://mausam.imd.gov.in/responsive/faq.php
+https://www.tandfonline.com/doi/full/10.1080/23328940.2025.2475420#d1e250
+https://ncdc.mohfw.gov.in/uploads/pdf/heat7.pdf
+https://www.kaggle.com/datasets/tanmayeeravipati/india-district-heat-vulnerability-index-2024
+https://www.tandfonline.com/cms/asset/3fb18b7e-264c-455f-a345-af54b3ca03c8/ktmp_a_2475420_ilg0001.jpg
+https://www.ncrb.gov.in/accidental-deaths-suicides-in-india-year-wise.html?year=2019&keyword=
+https://www.osha.gov/otm/section-3-health-hazards/chapter-4#heat_hazardassessment
+
+
+
+Canva Link:
+https://www.canva.com/design/DAHT1VzhBmc/ONKWZHPYif9J_a9ue7UgQw/edit

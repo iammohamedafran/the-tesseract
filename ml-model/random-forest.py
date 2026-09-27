@@ -20,7 +20,7 @@ from sklearn.metrics import (
 # 1. SETTINGS
 # ============================================================
 
-INPUT_FILE = "superdathambi-modified-copy.csv"
+INPUT_FILE = "super-da-thambi-modified.csv"
 
 TARGET = "Total Excess deaths due to a 5-day heatwave (97th percentile)"
 
@@ -43,6 +43,7 @@ print("Columns:", len(df.columns))
 # ============================================================
 
 features = [
+
     # Location
     "latitude",
     "longitude",
@@ -65,9 +66,9 @@ features = [
     "extreme_WBGT_days",
 
     # Population / exposure
-    "Total Main Workers",
-    "infant_pop",
-    "elderly_pop"
+    "infant_density",
+    "elderly_density",
+    "worker_density",
 ]
 
 
@@ -83,7 +84,9 @@ missing_columns = [
 ]
 
 if missing_columns:
+
     print("\nERROR: The following columns are missing:")
+
     for col in missing_columns:
         print(" -", col)
 
@@ -91,7 +94,7 @@ if missing_columns:
 
 
 # ============================================================
-# 5. SELECT X AND y
+# 5. SELECT FEATURES AND TARGET
 # ============================================================
 
 X = df[features].copy()
@@ -103,10 +106,9 @@ y = df[TARGET].copy()
 # ============================================================
 
 print("\nMissing values before cleaning:")
-
 print(X.isnull().sum())
 
-# Fill feature missing values with median
+# Fill feature missing values using median
 X = X.fillna(X.median())
 
 # Remove rows where target is missing
@@ -140,14 +142,17 @@ models = {
     # --------------------------------------------------------
     # Ridge Regression
     # --------------------------------------------------------
+
     "Ridge Regression": Pipeline([
         ("scaler", StandardScaler()),
         ("model", Ridge(alpha=10.0))
     ]),
 
+
     # --------------------------------------------------------
     # Random Forest
     # --------------------------------------------------------
+
     "Random Forest": RandomForestRegressor(
         n_estimators=300,
         max_depth=None,
@@ -156,9 +161,11 @@ models = {
         n_jobs=-1
     ),
 
+
     # --------------------------------------------------------
     # Gradient Boosting
     # --------------------------------------------------------
+
     "Gradient Boosting": GradientBoostingRegressor(
         n_estimators=200,
         learning_rate=0.05,
@@ -170,7 +177,7 @@ models = {
 
 
 # ============================================================
-# 9. TRAIN AND EVALUATE
+# 9. TRAIN AND EVALUATE ALL MODELS
 # ============================================================
 
 results = []
@@ -181,25 +188,36 @@ print("\n==============================================")
 print("MODEL TRAINING")
 print("==============================================")
 
+
 for name, model in models.items():
 
     print(f"\nTraining {name}...")
 
-    # Train
+    # Train on training data
     model.fit(X_train, y_train)
 
-    # Predict
+    # Predict test data
     predictions = model.predict(X_test)
 
-    # Metrics
-    mae = mean_absolute_error(y_test, predictions)
-
-    rmse = np.sqrt(
-        mean_squared_error(y_test, predictions)
+    # Calculate metrics
+    mae = mean_absolute_error(
+        y_test,
+        predictions
     )
 
-    r2 = r2_score(y_test, predictions)
+    rmse = np.sqrt(
+        mean_squared_error(
+            y_test,
+            predictions
+        )
+    )
 
+    r2 = r2_score(
+        y_test,
+        predictions
+    )
+
+    # Store results
     results.append({
         "Model": name,
         "MAE": mae,
@@ -235,7 +253,10 @@ try:
         random_state=RANDOM_STATE
     )
 
-    xgb_model.fit(X_train, y_train)
+    xgb_model.fit(
+        X_train,
+        y_train
+    )
 
     predictions = xgb_model.predict(X_test)
 
@@ -245,7 +266,10 @@ try:
     )
 
     rmse = np.sqrt(
-        mean_squared_error(y_test, predictions)
+        mean_squared_error(
+            y_test,
+            predictions
+        )
     )
 
     r2 = r2_score(
@@ -273,7 +297,7 @@ except ImportError:
 
 
 # ============================================================
-# 11. DISPLAY MODEL COMPARISON
+# 11. MODEL COMPARISON
 # ============================================================
 
 results_df = pd.DataFrame(results)
@@ -291,7 +315,7 @@ print(
 
 
 # ============================================================
-# 12. CROSS-VALIDATION
+# 12. 5-FOLD CROSS VALIDATION
 # ============================================================
 
 print("\n==============================================")
@@ -306,6 +330,7 @@ cv = KFold(
 
 cv_results = []
 
+
 for name, model in trained_models.items():
 
     scores = cross_val_score(
@@ -318,100 +343,153 @@ for name, model in trained_models.items():
 
     mae_scores = -scores
 
+    mean_mae = mae_scores.mean()
+    std_mae = mae_scores.std()
+
     cv_results.append({
         "Model": name,
-        "CV MAE Mean": mae_scores.mean(),
-        "CV MAE Std": mae_scores.std()
+        "CV MAE Mean": mean_mae,
+        "CV MAE Std": std_mae
     })
 
     print(
         f"{name}: "
-        f"MAE = {mae_scores.mean():.2f} "
-        f"+/- {mae_scores.std():.2f}"
+        f"MAE = {mean_mae:.2f} "
+        f"+/- {std_mae:.2f}"
     )
 
 
 # ============================================================
-# 13. SELECT MODEL BASED ON CV MAE
+# 13. TRAIN ALL MODELS ON COMPLETE DATASET
 # ============================================================
-
-cv_df = pd.DataFrame(cv_results)
-
-best_model_name = cv_df.loc[
-    cv_df["CV MAE Mean"].idxmin(),
-    "Model"
-]
-
-best_model = trained_models[best_model_name]
 
 print("\n==============================================")
-print("SELECTED MODEL")
+print("TRAINING FINAL MODELS")
 print("==============================================")
 
-print(best_model_name)
+for name, model in trained_models.items():
+
+    print(f"Training final {name}...")
+
+    model.fit(
+        X,
+        y
+    )
 
 
 # ============================================================
-# 14. TRAIN SELECTED MODEL ON ALL DATA
+# 14. SAVE ALL THREE MAIN MODELS
 # ============================================================
 
-print("\nTraining selected model on complete dataset...")
+print("\n==============================================")
+print("SAVING MODELS")
+print("==============================================")
 
-best_model.fit(X, y)
 
-
-# ============================================================
-# 15. SAVE MODEL
-# ============================================================
-
-MODEL_FILE = "heatwave_mortality_model.pkl"
-
+# Ridge
 joblib.dump(
-    best_model,
-    MODEL_FILE
+    trained_models["Ridge Regression"],
+    "ridge_model.pkl"
 )
 
-print("\nModel saved as:")
-print(MODEL_FILE)
+print("Saved: ridge_model.pkl")
+
+
+# Random Forest
+joblib.dump(
+    trained_models["Random Forest"],
+    "random_forest_model.pkl"
+)
+
+print("Saved: random_forest_model.pkl")
+
+
+# Gradient Boosting
+joblib.dump(
+    trained_models["Gradient Boosting"],
+    "gradient_boosting_model.pkl"
+)
+
+print("Saved: gradient_boosting_model.pkl")
+
+
+# Optional XGBoost
+if "XGBoost" in trained_models:
+
+    joblib.dump(
+        trained_models["XGBoost"],
+        "xgboost_model.pkl"
+    )
+
+    print("Saved: xgboost_model.pkl")
 
 
 # ============================================================
-# 16. RANDOM FOREST FEATURE IMPORTANCE
+# 15. RANDOM FOREST FEATURE IMPORTANCE
 # ============================================================
 
-if "Random Forest" in trained_models:
+rf = trained_models["Random Forest"]
 
-    rf = trained_models["Random Forest"]
+importance = pd.DataFrame({
+    "Feature": features,
+    "Importance": rf.feature_importances_
+})
 
-    importance = pd.DataFrame({
-        "Feature": features,
-        "Importance": rf.feature_importances_
-    })
+importance = importance.sort_values(
+    "Importance",
+    ascending=False
+)
 
-    importance = importance.sort_values(
-        "Importance",
-        ascending=False
+print("\n==============================================")
+print("RANDOM FOREST FEATURE IMPORTANCE")
+print("==============================================")
+
+print(
+    importance.to_string(
+        index=False,
+        float_format=lambda x: f"{x:.4f}"
     )
+)
 
-    print("\n==============================================")
-    print("RANDOM FOREST FEATURE IMPORTANCE")
-    print("==============================================")
+importance.to_csv(
+    "feature_importance_forest.csv",
+    index=False
+)
+# ============================================================
+# 15. GRADIENT BOOSTING FEATURE IMPORTANCE
+# ============================================================
 
-    print(
-        importance.to_string(
-            index=False,
-            float_format=lambda x: f"{x:.4f}"
-        )
+gb = trained_models["Gradient Boosting"]
+
+importance = pd.DataFrame({
+    "Feature": features,
+    "Importance": gb.feature_importances_
+})
+
+importance = importance.sort_values(
+    "Importance",
+    ascending=False
+)
+
+print("\n==============================================")
+print("GRADIENT BOOSTING FEATURE IMPORTANCE")
+print("==============================================")
+
+print(
+    importance.to_string(
+        index=False,
+        float_format=lambda x: f"{x:.4f}"
     )
+)
 
-    importance.to_csv(
-        "feature_importance.csv",
-        index=False
-    )
+importance.to_csv(
+    "gradient_boosting_feature_importance.csv",
+    index=False
+)
 
 
 # ============================================================
-# 17. SAVE MODEL RESULTS
+# 16. SAVE RESULTS
 # ============================================================
 
 results_df.to_csv(
@@ -419,15 +497,31 @@ results_df.to_csv(
     index=False
 )
 
+cv_df = pd.DataFrame(cv_results)
+
 cv_df.to_csv(
     "cross_validation_results.csv",
     index=False
 )
 
+
+# ============================================================
+# 17. FINISHED
+# ============================================================
+
+print("\n==============================================")
+print("TRAINING COMPLETED")
+print("==============================================")
+
 print("\nFiles created:")
-print(" - heatwave_mortality_model.pkl")
+
+print(" - ridge_model.pkl")
+print(" - random_forest_model.pkl")
+print(" - gradient_boosting_model.pkl")
+
+if "XGBoost" in trained_models:
+    print(" - xgboost_model.pkl")
+
 print(" - feature_importance.csv")
 print(" - model_comparison.csv")
 print(" - cross_validation_results.csv")
-
-print("\nTraining completed.")
